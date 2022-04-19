@@ -217,7 +217,12 @@ exports.list = (req, res) => {
     let sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     let limit = req.query.limit ? parseInt(req.query.limit) : 6;
 
-    product.find()
+    delete req.query.order;
+    delete req.query.sortBy;
+    delete req.query.limit;
+
+
+    product.find(req.query)
         .select("-photo1")
         .select("-photo2")
         .select("-photo3")
