@@ -1,4 +1,6 @@
-const { errorHandler } = require("../helpers/dbErrorHandler");
+const {
+    errorHandler
+} = require("../helpers/dbErrorHandler");
 const Bid = require("../models/bid");
 const User = require("../models/user");
 const Product = require("../models/product");
@@ -9,13 +11,15 @@ exports.createBid = (req, res) => {
 
     const bid = new Bid(req.body);
     bid.save((err, data) => {
-        if(err) {
+        if (err) {
             return res.status(400).json({
                 error: errorHandler(err),
             });
         }
 
-        res.json({data});
+        res.json({
+            data
+        });
     });
 
 };
@@ -49,7 +53,7 @@ exports.getBidList = (req, res) => {
                 });
             }
 
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].buyer.salt = undefined;
                 data[i].buyer.hashed_password = undefined;
                 data[i].buyer.phone = undefined;
@@ -58,8 +62,8 @@ exports.getBidList = (req, res) => {
                 data[i].buyer.createdAt = undefined;
                 data[i].buyer.updatedAt = undefined;
                 data[i].buyer.__v = undefined;
-                
-                
+
+
             }
 
             res.json({
@@ -89,12 +93,57 @@ exports.getBuyerSeller = (req, res, next) => {
                     error: "User not found"
                 });
             };
-    
+
             req.buyer = user;
             next();
-            
+
         });
     });
+}
+
+exports.getUserById = (req, res, next) => {
+    console.log("bid sell");
+
+    console.log(req.body);
+
+    User.findById(req.body.user_Id).exec((err, user) => {
+        if (err || !user) {
+            return res.status(400).json({
+                error: "User not found"
+            });
+        };
+
+        req.user = user;
+
+        next();
+    });
+}
+
+exports.addCoinsToWallet = (req, res) => {
+
+    req.user.wallet += req.body.amount;
+
+    // console.log(req.seller);
+    //console.log(req.buyer);
+
+    User.findOneAndUpdate({
+            _id: req.body.user_Id
+        }, {
+            $set: req.user
+        },
+        (err, user) => {
+            if (err) {
+                return res.status(400).json({
+                    error: "User could not be updated"
+                });
+            };
+
+            user.hashed_password = undefined;
+            user.salt = undefined;
+
+            res.send(user)
+        }
+    );
 }
 
 exports.completeBidTransaction = (req, res, next) => {
@@ -131,10 +180,10 @@ exports.completeBidTransaction = (req, res, next) => {
                             error: "User could not be updated"
                         });
                     };
-        
+
                     usr.hashed_password = undefined;
                     usr.salt = undefined;
-        
+
                     //res.json([user, usr]);
                     next();
                 }
@@ -171,19 +220,19 @@ exports.transferOwnership = (req, res) => {
     console.log(req.product);
 
     Product.findOneAndUpdate({
-        _id: req.body.product_id
-    }, {
-        $set: req.product
-    },
-    (err, prod) => {
-        if (err) {
-            return res.status(400).json({
-                error: "User could not be updated"
-            });
-        };
+            _id: req.body.product_id
+        }, {
+            $set: req.product
+        },
+        (err, prod) => {
+            if (err) {
+                return res.status(400).json({
+                    error: "User could not be updated"
+                });
+            };
 
-        console.log("prod");
-        console.log(prod);
-        res.json(prod);
-    });
+            console.log("prod");
+            console.log(prod);
+            res.json(prod);
+        });
 }
